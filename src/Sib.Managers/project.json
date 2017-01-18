@@ -1,8 +1,9 @@
-﻿{
+{
   "version": "1.0.0-*",
 
   "dependencies": {
-    "NETStandard.Library": "1.6.0"
+    "log4net": "2.0.7",
+    "NETStandard.Library": "1.6.1"
   },
 
   "frameworks": {
