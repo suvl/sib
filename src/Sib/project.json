@@ -1,15 +1,17 @@
 {
   "userSecretsId": "aspnet-Sib-44185a00-8b42-4ed5-b3a4-7c0b743d8c4b",
 
+  "version": "0.1.0",
+
   "dependencies": {
     "Microsoft.AspNetCore.Razor.Tools": {
       "version": "1.0.0-preview2-final",
       "type": "build"
     },
-    "Microsoft.EntityFrameworkCore.Tools": {
-      "version": "1.0.0-preview2-final",
-      "type": "build"
-    },
+    // "Microsoft.EntityFrameworkCore.Tools": {
+    //   "version": "1.0.0-preview2-final",
+    //   "type": "build"
+    // },
     "Microsoft.VisualStudio.Web.CodeGeneration.Tools": {
       "version": "1.0.0-preview2-final",
       "type": "build"
@@ -20,16 +22,18 @@
     },
     "BundlerMinifier.Core": "2.2.306",
     "Microsoft.AspNetCore.Authentication.Cookies": "1.1.0",
+    "Microsoft.AspNetCore.Authentication.Facebook": "1.1.0",
     "Microsoft.AspNetCore.Diagnostics": "1.1.0",
-    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.1.0",
-    "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.1.0",
+    // "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.1.0",
+    // "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.1.0",
     "Microsoft.AspNetCore.Mvc": "1.1.0",
     "Microsoft.AspNetCore.Routing": "1.1.0",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0",
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0",
+    "Microsoft.AspNetCore.Authorization": "1.1.0",
     "Microsoft.AspNetCore.StaticFiles": "1.1.0",
-    "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0",
-    "Microsoft.EntityFrameworkCore.SqlServer.Design": "1.1.0",
+    // "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0",
+    // "Microsoft.EntityFrameworkCore.SqlServer.Design": "1.1.0",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0",
     "Microsoft.Extensions.Configuration.Json": "1.1.0",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.1.0",
@@ -37,12 +41,14 @@
     "Microsoft.Extensions.Logging.Console": "1.1.0",
     "Microsoft.Extensions.Logging.Debug": "1.1.0",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0",
-    "Microsoft.NETCore.App": "1.1.0",
+    // "Microsoft.NETCore.App": "1.1.0",
     "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.1.0",
     "Sib.Core": "1.0.0-*",
     "Sib.Managers": "1.0.0-*",
     "Sib.Repository": "1.0.0-*",
-    "log4net": "2.0.7"
+    "log4net": "2.0.7",
+    "AspNetCore.Identity.MongoDB": "0.0.0",
+    "Microsoft.AspNetCore.Identity": "1.1.0"
   },
 
   "tools": {
@@ -58,12 +64,23 @@
     }
   },
 
+  // "frameworks": {
+  //   "netcoreapp1.1": {
+  //     "imports": [
+  //       "dotnet5.6",
+  //       "portable-net45+win8"
+  //     ]
+  //   }
+  // },
+
   "frameworks": {
-    "netcoreapp1.1": {
-      "imports": [
-        "dotnet5.6",
-        "portable-net45+win8"
-      ]
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.1.0",
+          "type": "platform"
+        }
+      }
     }
   },
 
@@ -93,6 +110,7 @@
   },
 
   "runtimes": {
-    "win10-x64": {}
+    "win10-x64": {},
+    "ubuntu.16.10-x64": {}
   }
 }
