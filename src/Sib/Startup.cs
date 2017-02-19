@@ -101,8 +101,11 @@ namespace Sib
             {
                 var dataProtectionPath = Path.Combine(_env.WebRootPath, "identity-artifacts");
                 options.Cookies.ApplicationCookie.AuthenticationScheme = "ApplicationCookie";
-                options.Cookies.ApplicationCookie.DataProtectionProvider =
-                    DataProtectionProvider.Create(dataProtectionPath);
+
+                var directory = new DirectoryInfo(dataProtectionPath);
+                var provider = DataProtectionProvider.Create(directory);
+                options.Cookies.ApplicationCookie.DataProtectionProvider = provider;
+                    
                 options.Lockout.AllowedForNewUsers = true;
             });
 
@@ -128,7 +131,6 @@ namespace Sib
             services.TryAddSingleton<ISecurityStampValidator, SecurityStampValidator<ApplicationUser>>();
             services
                 .TryAddSingleton<IUserClaimsPrincipalFactory<ApplicationUser>, UserClaimsPrincipalFactory<ApplicationUser>>();
-            serv
             services.TryAddSingleton<SibUserManager<ApplicationUser>, SibUserManager<ApplicationUser>>();
             services.TryAddScoped<SignInManager<ApplicationUser>, SibSignInManager<ApplicationUser>>();
 
