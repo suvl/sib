@@ -1,28 +1,59 @@
-﻿using System;
-using System.IO;
-using Microsoft.AspNetCore.Authentication.OAuth;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Identity.MongoDB;
-using MongoDB.Driver;
-using Sib.Core.Settings;
-using Sib.Models;
-using Sib.Services;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Startup.cs" company="BFBVM">
+//   © 2017 BFBVM
+// </copyright>
+// <summary>
+//   The web application startup file.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace Sib
 {
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Security.Claims;
+    using System.Threading.Tasks;
+
+    using Core.Authentication;
+    using Core.Models;
+    using Core.Settings;
+
+    using Microsoft.AspNetCore.Authentication.OAuth;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.DataProtection;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Identity.MongoDB;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.DependencyInjection.Extensions;
+    using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
+
+    using Models;
+
+    using MongoDB.Driver;
+
+    using Services;
+
+    /// <summary>
+    /// The startup.
+    /// </summary>
     public class Startup
     {
+        /// <summary>
+        /// The environment variable.
+        /// </summary>
         private readonly IHostingEnvironment _env;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Startup"/> class.
+        /// </summary>
+        /// <param name="env">
+        /// The env.
+        /// </param>
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -37,13 +68,21 @@ namespace Sib
             }
 
             builder.AddEnvironmentVariables();
-            Configuration = builder.Build();
-            _env = env;
+            this.Configuration = builder.Build();
+            this._env = env;
         }
 
+        /// <summary>
+        /// Gets the configuration.
+        /// </summary>
         public IConfigurationRoot Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        /// <summary>
+        /// This method gets called by the runtime. Use this method to add services to the container.
+        /// </summary>
+        /// <param name="services">
+        /// The services.
+        /// </param>
         public void ConfigureServices(IServiceCollection services)
         {
 
@@ -88,10 +127,10 @@ namespace Sib
             services.TryAddSingleton<IdentityErrorDescriber>();
             services.TryAddSingleton<ISecurityStampValidator, SecurityStampValidator<ApplicationUser>>();
             services
-                .TryAddSingleton
-                <IUserClaimsPrincipalFactory<ApplicationUser>, UserClaimsPrincipalFactory<ApplicationUser>>();
-            services.TryAddSingleton<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();
-            services.TryAddScoped<SignInManager<ApplicationUser>, SignInManager<ApplicationUser>>();
+                .TryAddSingleton<IUserClaimsPrincipalFactory<ApplicationUser>, UserClaimsPrincipalFactory<ApplicationUser>>();
+            serv
+            services.TryAddSingleton<SibUserManager<ApplicationUser>, SibUserManager<ApplicationUser>>();
+            services.TryAddScoped<SignInManager<ApplicationUser>, SibSignInManager<ApplicationUser>>();
 
             AddDefaultTokenProviders(services);
 
@@ -104,7 +143,19 @@ namespace Sib
             services.AddTransient<ISmsSender, AuthMessageSender>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+
+        /// <summary>
+        /// The configure. This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// </summary>
+        /// <param name="app">
+        /// The app.
+        /// </param>
+        /// <param name="env">
+        /// The env.
+        /// </param>
+        /// <param name="loggerFactory">
+        /// The logger factory.
+        /// </param>
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
@@ -122,20 +173,32 @@ namespace Sib
 
             app.UseStaticFiles();
 
+            var facebookAppSecrets = this.Configuration["FbAppSecret"];
+
             app.UseIdentity()
                 .UseFacebookAuthentication(new FacebookOptions
                 {
-                    AppId = "",
-                    AppSecret = "",
-                    AutomaticAuthenticate = true,
-                    AutomaticChallenge = true,
+                    AppId = "1483019898393253",
+                    AppSecret = facebookAppSecrets,
+                    Scope = { "public_profile", "email", "user_birthday" },
                     Events = new OAuthEvents
                     {
-                        
+                        OnTicketReceived = context =>
+                        {
+                            var name = context.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
+                            var firstName = context.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName);
+                            var lastName = context.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Surname);
+                            
+                            context.HttpContext.Items.Add("name", name.Value);
+                            context.HttpContext.Items.Add("firstname", firstName.Value);
+                            context.HttpContext.Items.Add("lastname", lastName.Value);
+
+                            return Task.CompletedTask;
+                        }
                     }
                 });
 
-            // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
+            //// Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
 
             app.UseMvc(routes =>
             {
@@ -145,18 +208,35 @@ namespace Sib
             });
         }
 
-
+        /// <summary>
+        /// The add default token providers.
+        /// </summary>
+        /// <param name="services">
+        /// The services.
+        /// </param>
         private static void AddDefaultTokenProviders(IServiceCollection services)
         {
             var dataProtectionProviderType =
                 typeof(DataProtectorTokenProvider<>).MakeGenericType(typeof(ApplicationUser));
-            var phoneNumberProviderType = typeof(PhoneNumberTokenProvider<>).MakeGenericType(typeof(ApplicationUser));
+            ////var phoneNumberProviderType = typeof(PhoneNumberTokenProvider<>).MakeGenericType(typeof(ApplicationUser));
             var emailTokenProviderType = typeof(EmailTokenProvider<>).MakeGenericType(typeof(ApplicationUser));
             AddTokenProvider(services, TokenOptions.DefaultProvider, dataProtectionProviderType);
             AddTokenProvider(services, TokenOptions.DefaultEmailProvider, emailTokenProviderType);
-            AddTokenProvider(services, TokenOptions.DefaultPhoneProvider, phoneNumberProviderType);
+            ////AddTokenProvider(services, TokenOptions.DefaultPhoneProvider, phoneNumberProviderType);
         }
 
+        /// <summary>
+        /// The add token provider.
+        /// </summary>
+        /// <param name="services">
+        /// The services.
+        /// </param>
+        /// <param name="providerName">
+        /// The provider name.
+        /// </param>
+        /// <param name="provider">
+        /// The provider.
+        /// </param>
         private static void AddTokenProvider(IServiceCollection services, string providerName, Type provider)
         {
             services.Configure<IdentityOptions>(options =>

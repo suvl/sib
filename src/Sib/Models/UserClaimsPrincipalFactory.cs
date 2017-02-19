@@ -9,11 +9,13 @@ using Microsoft.Extensions.Options;
 
 namespace Sib.Models
 {
+    using Core.Authentication;
+
     public class UserClaimsPrincipalFactory<TUser> : IUserClaimsPrincipalFactory<TUser>
-            where TUser : class
+            where TUser : class, IApplicationUser
     {
         public UserClaimsPrincipalFactory(
-            UserManager<TUser> userManager,
+            SibUserManager<TUser> userManager,
             IOptions<IdentityOptions> optionsAccessor)
         {
             if (userManager == null)
@@ -29,7 +31,7 @@ namespace Sib.Models
             Options = optionsAccessor.Value;
         }
 
-        public UserManager<TUser> UserManager { get; private set; }
+        public SibUserManager<TUser> UserManager { get; private set; }
 
         public IdentityOptions Options { get; private set; }
 
@@ -47,6 +49,7 @@ namespace Sib.Models
                 Options.ClaimsIdentity.RoleClaimType);
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, userId));
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, userName));
+            
             if (UserManager.SupportsUserSecurityStamp)
             {
                 id.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType,

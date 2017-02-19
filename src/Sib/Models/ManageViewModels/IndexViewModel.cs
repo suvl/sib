@@ -8,6 +8,8 @@ namespace Sib.Models.ManageViewModels
 {
     public class IndexViewModel
     {
+        public bool FirstName { get; set; }
+
         public bool HasPassword { get; set; }
 
         public IList<UserLoginInfo> Logins { get; set; }

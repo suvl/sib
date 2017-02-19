@@ -7,5 +7,6 @@ namespace Sib.Core.Domain
 {
     public class SibUser
     {
+
     }
 }

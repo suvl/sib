@@ -34,10 +34,9 @@
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0",
     "Microsoft.NETCore.App": "1.1.0",
     "Microsoft.AspNetCore.Identity.MongoDB": "1.0.2",
-    "Sib.Core": "*",
-    "Sib.Repository": "*",
     "Microsoft.AspNetCore.DataProtection.Extensions": "1.0.0",
-    "Microsoft.AspNetCore.Authentication.Facebook": "1.1.0"
+    "Microsoft.AspNetCore.Authentication.Facebook": "1.1.0",
+    "Sib.Core": "1.0.0"
   },
 
   "tools": {

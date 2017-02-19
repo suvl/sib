@@ -6,23 +6,26 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Sib.Core.Models;
 using Sib.Models;
 using Sib.Models.ManageViewModels;
 using Sib.Services;
 
 namespace Sib.Controllers
 {
+    using Sib.Core.Authentication;
+
     [Authorize]
     public class ManageController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SibUserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
 
         public ManageController(
-        UserManager<ApplicationUser> userManager,
+        SibUserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IEmailSender emailSender,
         ISmsSender smsSender,
@@ -41,13 +44,45 @@ namespace Sib.Controllers
         public async Task<IActionResult> Index(ManageMessageId? message = null)
         {
             ViewData["StatusMessage"] =
-                message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
-                : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
+                message == ManageMessageId.ChangePasswordSuccess ? "Password alterada."
+                : message == ManageMessageId.SetPasswordSuccess ? "Password criada."
                 : message == ManageMessageId.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
-                : message == ManageMessageId.Error ? "An error has occurred."
-                : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
+                : message == ManageMessageId.Error ? "Ocorreu um erro."
+                : message == ManageMessageId.AddPhoneSuccess ? "Adicionaste o teu número de telemóvel."
                 : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
                 : "";
+
+            switch (message)
+            {
+                case ManageMessageId.AddPhoneSuccess:
+                    ViewData["StatusMessage"] = "Número alterado com sucesso.";
+                    break;
+                case ManageMessageId.AddLoginSuccess:
+                    ViewData["StatusMessage"] = "Serviço externo adicionado.";
+                    break;
+                case ManageMessageId.ChangePasswordSuccess:
+                    ViewData["StatusMessage"] = "Alteraste a password com sucesso";
+                    break;
+                case ManageMessageId.SetTwoFactorSuccess:
+                    ViewData["StatusMessage"] = "Autenticação de dois fatores alterada com sucesso";
+                    break;
+                case ManageMessageId.SetPasswordSuccess:
+                    ViewData["StatusMessage"] = "Password criada com sucesso.";
+                    break;
+                case ManageMessageId.RemoveLoginSuccess:
+                    ViewData["StatusMessage"] = "Associação com serviço externo removida.";
+                    break;
+                case ManageMessageId.RemovePhoneSuccess:
+                    ViewData["StatusMessage"] = "Número de telemóvel corretamente removido.";
+                    break;
+                case ManageMessageId.Error:
+                    ViewData["StatusMessage"] = "Ocorreu um erro.";
+                    break;
+                default:
+                    ViewData["StatusMessage"] = string.Empty;
+                    break;
+            }
+
 
             var user = await GetCurrentUserAsync();
             if (user == null)
@@ -56,6 +91,7 @@ namespace Sib.Controllers
             }
             var model = new IndexViewModel
             {
+                //FirstName = user.UserName,
                 HasPassword = await _userManager.HasPasswordAsync(user),
                 PhoneNumber = await _userManager.GetPhoneNumberAsync(user),
                 TwoFactor = await _userManager.GetTwoFactorEnabledAsync(user),
@@ -108,9 +144,12 @@ namespace Sib.Controllers
             {
                 return View("Error");
             }
-            var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
-            await _smsSender.SendSmsAsync(model.PhoneNumber, "Your security code is: " + code);
-            return RedirectToAction(nameof(VerifyPhoneNumber), new { PhoneNumber = model.PhoneNumber });
+            ////var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
+            ////await _smsSender.SendSmsAsync(model.PhoneNumber, "Your security code is: " + code);
+            ////return RedirectToAction(nameof(VerifyPhoneNumber), new { PhoneNumber = model.PhoneNumber });
+            user.PhoneNumber = model.PhoneNumber;
+            await _userManager.UpdateAsync(user);
+            return RedirectToAction(nameof(Index), "Manage");
         }
 
         //
@@ -352,7 +391,8 @@ namespace Sib.Controllers
 
         private Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return _userManager.GetUserAsync(HttpContext.User);
+            var user = HttpContext.User;
+            return _userManager.GetUserAsync(user);
         }
 
         #endregion

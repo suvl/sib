@@ -10,7 +10,7 @@ namespace Sib.Models.ManageViewModels
     {
         [Required]
         [Phone]
-        [Display(Name = "Phone number")]
+        [Display(Name = "Telemóvel"), RegularExpression(@"93\d{7}|91\d{7}|92\d{7}|96\d{7}", ErrorMessage = "Telemóvel inválido")]
         public string PhoneNumber { get; set; }
     }
 }
