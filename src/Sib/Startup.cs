@@ -13,6 +13,7 @@ namespace Sib
     using System.IO;
     using System.Linq;
     using System.Security.Claims;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Core.Authentication;
@@ -37,6 +38,11 @@ namespace Sib
     using MongoDB.Driver;
 
     using Services;
+
+    using Sib.Core.Domain;
+    using Sib.Repository;
+
+    using IServiceRepository = Sib.Core.Interfaces.IServiceRepository;
 
     /// <summary>
     /// The startup.
@@ -87,6 +93,7 @@ namespace Sib
         {
 
             services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDbSettings"));
+
             services.AddSingleton<IUserStore<ApplicationUser>>(provider =>
             {
                 var options = provider.GetService<IOptions<MongoDbSettings>>();
@@ -105,9 +112,36 @@ namespace Sib
                 var directory = new DirectoryInfo(dataProtectionPath);
                 var provider = DataProtectionProvider.Create(directory);
                 options.Cookies.ApplicationCookie.DataProtectionProvider = provider;
-                    
+
                 options.Lockout.AllowedForNewUsers = true;
             });
+
+            services.AddSingleton<IRoleStore<IdentityRole>>(
+                provider =>
+                    {
+                        var options = provider.GetService<IOptions<MongoDbSettings>>();
+                        var client = new MongoClient(options.Value.ConnectionString);
+                        var database = client.GetDatabase(options.Value.DatabaseName);
+                        var collection = database.GetCollection<IdentityRole>(nameof(IdentityRole));
+
+                        var roleStore = new RoleStore<IdentityRole>(collection);
+
+                        var admin = roleStore.FindByNameAsync(Roles.Administrator, CancellationToken.None).Result;
+                        if (admin == null)
+                        {
+                            roleStore.CreateAsync(new IdentityRole(Roles.Administrator), CancellationToken.None).Wait();
+                        }
+
+                        return roleStore;
+                    });
+
+
+            services.AddSingleton<IServiceRepository>(
+                provider =>
+                    {
+                        var options = provider.GetService<IOptions<MongoDbSettings>>();
+                        return new ServiceRepository(options.Value);
+                    });
 
             // Services used by identity
             services.AddAuthentication(options =>
@@ -133,6 +167,19 @@ namespace Sib
                 .TryAddSingleton<IUserClaimsPrincipalFactory<ApplicationUser>, UserClaimsPrincipalFactory<ApplicationUser>>();
             services.TryAddSingleton<SibUserManager<ApplicationUser>, SibUserManager<ApplicationUser>>();
             services.TryAddScoped<SignInManager<ApplicationUser>, SibSignInManager<ApplicationUser>>();
+
+
+
+            services.AddSingleton<IUserRoleStore<ApplicationUser>>(
+                provider =>
+                    {
+                        var options = provider.GetService<IOptions<MongoDbSettings>>();
+                        var client = new MongoClient(options.Value.ConnectionString);
+                        var database = client.GetDatabase(options.Value.DatabaseName);
+                        var collection = database.GetCollection<ApplicationUser>(nameof(ApplicationUser));
+
+                        return new UserStore<ApplicationUser>(collection);
+                    });
 
             AddDefaultTokenProviders(services);
 
@@ -190,7 +237,7 @@ namespace Sib
                             var name = context.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
                             var firstName = context.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName);
                             var lastName = context.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Surname);
-                            
+
                             context.HttpContext.Items.Add("name", name.Value);
                             context.HttpContext.Items.Add("firstname", firstName.Value);
                             context.HttpContext.Items.Add("lastname", lastName.Value);

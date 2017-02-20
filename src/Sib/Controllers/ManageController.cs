@@ -15,7 +15,7 @@ namespace Sib.Controllers
 {
     using Sib.Core.Authentication;
 
-    [Authorize]
+    [Authorize, Route("manage")]
     public class ManageController : Controller
     {
         private readonly SibUserManager<ApplicationUser> _userManager;
@@ -40,7 +40,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Manage/Index
-        [HttpGet]
+        [HttpGet, Route("")]
         public async Task<IActionResult> Index(ManageMessageId? message = null)
         {
             ViewData["StatusMessage"] =
@@ -91,7 +91,8 @@ namespace Sib.Controllers
             }
             var model = new IndexViewModel
             {
-                //FirstName = user.UserName,
+                Email = user.Email,
+                FirstName = user.FirstName,
                 HasPassword = await _userManager.HasPasswordAsync(user),
                 PhoneNumber = await _userManager.GetPhoneNumberAsync(user),
                 TwoFactor = await _userManager.GetTwoFactorEnabledAsync(user),
@@ -101,9 +102,20 @@ namespace Sib.Controllers
             return View(model);
         }
 
+        [HttpGet, Route("delete_me")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var user = await this.GetCurrentUserAsync().ConfigureAwait(false);
+            if (user != null) 
+                await this._userManager.DeleteAsync(user).ConfigureAwait(false);
+
+            return RedirectToAction("Index", "Home");
+        }
+
         //
         // POST: /Manage/RemoveLogin
-        [HttpPost]
+        [HttpPost, Route("remove")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveLogin(RemoveLoginViewModel account)
         {
@@ -123,6 +135,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Manage/AddPhoneNumber
+        [Route("phone")]
         public IActionResult AddPhoneNumber()
         {
             return View();
@@ -130,7 +143,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Manage/AddPhoneNumber
-        [HttpPost]
+        [HttpPost, Route("phone")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPhoneNumber(AddPhoneNumberViewModel model)
         {
@@ -154,7 +167,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Manage/EnableTwoFactorAuthentication
-        [HttpPost]
+        [HttpPost, Route("twofactor")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EnableTwoFactorAuthentication()
         {
@@ -170,7 +183,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Manage/DisableTwoFactorAuthentication
-        [HttpPost]
+        [HttpPost, Route("twofactor")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DisableTwoFactorAuthentication()
         {
@@ -186,7 +199,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Manage/VerifyPhoneNumber
-        [HttpGet]
+        [HttpGet, Route("verifyphone")]
         public async Task<IActionResult> VerifyPhoneNumber(string phoneNumber)
         {
             var user = await GetCurrentUserAsync();
@@ -201,7 +214,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Manage/VerifyPhoneNumber
-        [HttpPost]
+        [HttpPost, Route("verifyphone")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyPhoneNumber(VerifyPhoneNumberViewModel model)
         {
@@ -226,7 +239,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Manage/RemovePhoneNumber
-        [HttpPost]
+        [HttpPost, Route("removephone")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemovePhoneNumber()
         {
@@ -245,7 +258,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Manage/ChangePassword
-        [HttpGet]
+        [HttpGet, Route("changepass")]
         public IActionResult ChangePassword()
         {
             return View();
@@ -253,7 +266,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Manage/ChangePassword
-        [HttpPost]
+        [HttpPost, Route("changepass")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
@@ -279,7 +292,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Manage/SetPassword
-        [HttpGet]
+        [HttpGet, Route("setpass")]
         public IActionResult SetPassword()
         {
             return View();
@@ -287,7 +300,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Manage/SetPassword
-        [HttpPost]
+        [HttpPost, Route("setpass")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetPassword(SetPasswordViewModel model)
         {
@@ -312,7 +325,7 @@ namespace Sib.Controllers
         }
 
         //GET: /Manage/ManageLogins
-        [HttpGet]
+        [HttpGet, Route("external")]
         public async Task<IActionResult> ManageLogins(ManageMessageId? message = null)
         {
             ViewData["StatusMessage"] =
@@ -337,7 +350,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Manage/LinkLogin
-        [HttpPost]
+        [HttpPost, Route("addexternal")]
         [ValidateAntiForgeryToken]
         public IActionResult LinkLogin(string provider)
         {
@@ -349,7 +362,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Manage/LinkLoginCallback
-        [HttpGet]
+        [HttpGet, Route("externalcallback")]
         public async Task<ActionResult> LinkLoginCallback()
         {
             var user = await GetCurrentUserAsync();

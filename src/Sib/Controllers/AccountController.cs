@@ -17,13 +17,20 @@ using Sib.Services;
 
 namespace Sib.Controllers
 {
+    using System.Threading;
+
+    using Microsoft.AspNetCore.Identity.MongoDB;
+
     using Sib.Core.Authentication;
 
-    [Authorize]
+    [Authorize, Route("account")]
     public class AccountController : Controller
     {
         private readonly SibUserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+
+        private readonly IRoleStore<IdentityRole> _roleStore;
+        private readonly IUserStore<ApplicationUser> _userRoleStore;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
@@ -31,21 +38,25 @@ namespace Sib.Controllers
         public AccountController(
             SibUserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
+            IRoleStore<IdentityRole> roleStore,
             IEmailSender emailSender,
             ISmsSender smsSender,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory, 
+            IUserStore<ApplicationUser> userRoleStore)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _smsSender = smsSender;
+            this._userRoleStore = userRoleStore;
+            _roleStore = roleStore;
             _logger = loggerFactory.CreateLogger<AccountController>();
         }
 
         //
         // GET: /Account/Login
         [HttpGet]
-        [AllowAnonymous]
+        [AllowAnonymous, Route("login")]
         public IActionResult Login(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -54,7 +65,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Account/Login
-        [HttpPost]
+        [HttpPost, Route("login")]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
@@ -64,11 +75,12 @@ namespace Sib.Controllers
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false).ConfigureAwait(false);
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true).ConfigureAwait(false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation(1, "User logged in.");
-                    return RedirectToLocal(returnUrl);
+                    await this.ProcessRolesForUsers(model.Email).ConfigureAwait(false);
+                    return this.RedirectToLocal(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -90,9 +102,24 @@ namespace Sib.Controllers
             return View(model);
         }
 
+        private async Task ProcessRolesForUsers(string email)
+        {
+            if (
+                email.ToUpper() ==
+                    "JOAO.MIGUEL.SOARES@GMAIL.COM" || email.ToUpper() == "IGOR-CARECA@HOTMAIL.COM")
+            {
+                var user = await this._userManager.FindByEmailAsync(email).ConfigureAwait(false);
+                var role = await this._roleStore.FindByNameAsync(Roles.Administrator, CancellationToken.None).ConfigureAwait(false);
+
+                await this._userManager.RemoveFromRoleAsync(user, role.Name).ConfigureAwait(false);
+                var identityResult = await this._userManager.AddToRoleAsync(user, role.Name).ConfigureAwait(false);
+                this._logger.LogDebug($"IdentityResult S:{identityResult.Succeeded} E:{identityResult.Errors}");
+            }
+        }
+
         //
         // GET: /Account/Register
-        [HttpGet]
+        [HttpGet, Route("register")]
         [AllowAnonymous]
         public IActionResult Register(string returnUrl = null)
         {
@@ -102,7 +129,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Account/Register
-        [HttpPost]
+        [HttpPost, Route("register")]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
@@ -133,8 +160,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Account/LogOff
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, Route("imout")]
         public async Task<IActionResult> LogOff()
         {
             await _signInManager.SignOutAsync();
@@ -144,7 +170,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Account/ExternalLogin
-        [HttpPost]
+        [HttpPost, Route("external")]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public IActionResult ExternalLogin(string provider, string returnUrl = null)
@@ -157,7 +183,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Account/ExternalLoginCallback
-        [HttpGet]
+        [HttpGet, Route("callback")]
         [AllowAnonymous]
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
         {
@@ -199,7 +225,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Account/ExternalLoginConfirmation
-        [HttpPost]
+        [HttpPost, Route("externalconfirm")]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl = null)
@@ -215,6 +241,7 @@ namespace Sib.Controllers
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
 
                 user.AddFbContextToUser(HttpContext);
+                await this.ProcessRolesForUsers(model.Email).ConfigureAwait(false);
 
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
@@ -235,7 +262,7 @@ namespace Sib.Controllers
         }
 
         // GET: /Account/ConfirmEmail
-        [HttpGet]
+        [HttpGet, Route("mailconfirm")]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
@@ -254,7 +281,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Account/ForgotPassword
-        [HttpGet]
+        [HttpGet, Route("forgot")]
         [AllowAnonymous]
         public IActionResult ForgotPassword()
         {
@@ -263,7 +290,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Account/ForgotPassword
-        [HttpPost]
+        [HttpPost, Route("forgot")]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
@@ -292,7 +319,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Account/ForgotPasswordConfirmation
-        [HttpGet]
+        [HttpGet, Route("forgotconfirm")]
         [AllowAnonymous]
         public IActionResult ForgotPasswordConfirmation()
         {
@@ -301,7 +328,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Account/ResetPassword
-        [HttpGet]
+        [HttpGet, Route("reset")]
         [AllowAnonymous]
         public IActionResult ResetPassword(string code = null)
         {
@@ -310,7 +337,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Account/ResetPassword
-        [HttpPost]
+        [HttpPost, Route("reset")]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
@@ -336,7 +363,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Account/ResetPasswordConfirmation
-        [HttpGet]
+        [HttpGet, Route("resetconfirm")]
         [AllowAnonymous]
         public IActionResult ResetPasswordConfirmation()
         {
@@ -345,7 +372,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Account/SendCode
-        [HttpGet]
+        [HttpGet, Route("sendcode")]
         [AllowAnonymous]
         public async Task<ActionResult> SendCode(string returnUrl = null, bool rememberMe = false)
         {
@@ -361,7 +388,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Account/SendCode
-        [HttpPost]
+        [HttpPost, Route("sendcode")]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendCode(SendCodeViewModel model)
@@ -399,7 +426,7 @@ namespace Sib.Controllers
 
         //
         // GET: /Account/VerifyCode
-        [HttpGet]
+        [HttpGet, Route("verifycode")]
         [AllowAnonymous]
         public async Task<IActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = null)
         {
@@ -414,7 +441,7 @@ namespace Sib.Controllers
 
         //
         // POST: /Account/VerifyCode
-        [HttpPost]
+        [HttpPost, Route("verifycode")]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model)
@@ -442,6 +469,12 @@ namespace Sib.Controllers
                 ModelState.AddModelError(string.Empty, "Invalid code.");
                 return View(model);
             }
+        }
+
+        [HttpGet, AllowAnonymous, Route("AccessDenied")]
+        public IActionResult AcessDenied(string returnUrl)
+        {
+            return this.View("AccessDenied", returnUrl);
         }
 
         #region Helpers

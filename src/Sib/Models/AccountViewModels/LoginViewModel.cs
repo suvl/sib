@@ -16,7 +16,7 @@ namespace Sib.Models.AccountViewModels
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
-        [Display(Name = "Remember me?")]
+        [Display(Name = "Manter-me ligado?")]
         public bool RememberMe { get; set; }
     }
 }

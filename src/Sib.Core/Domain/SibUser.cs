@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Sib.Core.Domain
+﻿namespace Sib.Core.Domain
 {
-    public class SibUser
-    {
+    using System;
 
+    public class SibUser : Person
+    {
+        public DateTime BirthDate { get; set; }
+
+        public DateTime EntryDate { get; set; }
+
+        public Section Section { get; set; }
+
+        public Rank Rank { get; set; }
     }
 }

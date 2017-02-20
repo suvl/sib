@@ -7,7 +7,7 @@
     "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.1.0",
     "Microsoft.AspNetCore.Authentication.Cookies": "1.1.0",
     "Microsoft.AspNetCore.Diagnostics": "1.1.0",
-    "Microsoft.AspNetCore.Mvc": "1.1.0",
+    "Microsoft.AspNetCore.Mvc": "1.1.1",
     "Microsoft.AspNetCore.Routing": "1.1.0",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0",
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0",
@@ -23,13 +23,22 @@
     "Microsoft.AspNetCore.Identity.MongoDB": "1.0.2",
     "Microsoft.AspNetCore.Authentication.Facebook": "1.1.0",
     "Sib.Core": "1.0.0",
+    "Sib.Repository": "1.0.0",
     "NuGet.CommandLine": "3.5.0",
     "Microsoft.VisualStudio.Web.CodeGenerators.Mvc": "1.1.0-preview4-final",
     "Microsoft.VisualStudio.Web.CodeGeneration.Tools": "1.1.0-preview4-final",
     "Microsoft.AspNetCore.DataProtection.Extensions": "1.1.0"
   },
 
-  "tools": {  },
+  "tools": {
+    "Microsoft.VisualStudio.Web.CodeGeneration.Tools": {
+      "version": "1.1.0-preview4-final",
+      "imports": [
+        "portable-net45+win8"
+      ]
+    },
+    "BundlerMinifier.Core": "2.3.327"
+  },
 
   "frameworks": {
     "netcoreapp1.0": {

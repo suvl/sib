@@ -1,0 +1,27 @@
+﻿@model Sib.Core.Dto.ServiceModel
+
+@{
+    ViewBag.Title = "Editar serviço";
+    Layout = "_Layout";
+}
+
+<h2>Editar serviço existente</h2>
+
+
+<form asp-action="Update" class="form-horizontal" role="form">
+    <div class="form-horizontal">
+        @await Html.PartialAsync("_ServiceModelForm").ConfigureAwait(false)
+    </div>
+    <div>
+        <button type="submit" class="btn btn-success">Atualizar</button>
+        <a asp-action="Index" class="btn btn-default">Cancelar</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial").ConfigureAwait(false);}
+
+    <script>
+        $(servicesDateAndTimePickers());
+    </script>
+}

@@ -2,10 +2,12 @@
   "version": "1.0.0-*",
 
   "dependencies": {
+    "FluentValidation": "6.2.1",
     "log4net": "2.0.7",
     "Microsoft.AspNetCore.Identity.MongoDB": "1.0.2",
-    "MongoDB.Bson": "2.4.1",
-    "NETStandard.Library": "1.6.1"
+    "MongoDB.Bson": "2.4.2",
+    "NETStandard.Library": "1.6.1",
+    "System.ComponentModel.Annotations": "4.3.0"
   },
 
   "frameworks": {

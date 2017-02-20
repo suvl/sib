@@ -51,8 +51,8 @@
                         <h3 class="masthead-brand">Si&#9837;</h3>
                         <nav>
                             <ul class="nav masthead-nav">
-                                <li class="active"><a href="#">Eu</a></li>
-                                <li><a href="#">Saídas</a></li>
+                                <li><a href="@Url.Action("Index", "Manage")">Eu</a></li>
+                                <li><a href="@Url.Action("Index", "Services")">Saídas</a></li>
                                 <li><a href="#">Ensaios</a></li>
                                 <li><a href="#">Ajuda</a></li>
                             </ul>
@@ -91,7 +91,8 @@
         </div>
 
     </div>
-
+    
+    @RenderSection("scripts", required: false)
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
