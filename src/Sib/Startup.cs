@@ -185,7 +185,12 @@ namespace Sib
 
             services.AddMvc();
 
-
+            // policies
+            services.AddAuthorization(
+                options =>
+                    {
+                        options.AddPolicy("Administrator", builder => builder.RequireRole(Roles.Administrator));
+                    });
 
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();

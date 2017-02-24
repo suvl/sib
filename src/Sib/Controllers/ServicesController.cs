@@ -52,13 +52,14 @@ namespace Sib.Controllers
             return this.View(convertedServices);
         }
 
-        [Route("new"), Authorize(Roles = "Administrator,ADMINISTRATOR")]
+        [Route("new"), Authorize(Policy = "Administrator")]
         public IActionResult Create()
         {
             return this.View();
         }
 
         [HttpPost, Route("new"), ValidateAntiForgeryToken, Authorize(Roles = Roles.Administrator)]
+
         public async Task<IActionResult> Create(ServiceModel serviceModel)
         {
             if (ModelState.IsValid)
@@ -83,6 +84,9 @@ namespace Sib.Controllers
         public async Task<IActionResult> Edit(string serviceId)
         {
             var service = await this.serviceRepository.FindById(serviceId).ConfigureAwait(false);
+            // debug
+            service.Work.Add(new Arruada());
+
             var serviceModel = new ServiceModel
             {
                 Id = serviceId,
@@ -93,6 +97,14 @@ namespace Sib.Controllers
                 Work = service.Work
             };
             return this.View("Edit", serviceModel);
+        }
+
+        [HttpPut, Authorize(Policy = "Administrator")]
+        public async Task<IActionResult> PutWork(ServiceModel model, ServiceWork work)
+        {
+            model.Work.Add(work);
+
+            throw new NotImplementedException();
         }
 
         [HttpPost, Route("update"), ValidateAntiForgeryToken, Authorize(Roles = Roles.Administrator)]

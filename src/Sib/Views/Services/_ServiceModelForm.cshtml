@@ -1,4 +1,6 @@
-﻿@using Sib.Core.Dto
+﻿@using System.Runtime.CompilerServices
+@using Sib.Core.Domain
+@using Sib.Core.Dto
 @model ServiceModel
 
 @{
@@ -41,7 +43,7 @@
     <div class="col-md-10">
 
         <div class="input-group bfh-timepicker" id="startTimePicker" data-time="@startTime">
-            
+
         </div>
         <input id="startTime" asp-for="Start" class="hidden" type="text" value="@startTime" />
         <span asp-validation-for="Start" class="text-danger"></span>
@@ -51,10 +53,46 @@
     <label asp-for="End" class="col-md-2 control-label">Chegada</label>
     <div class="col-md-10">
         <div class="input-group bfh-timepicker" id="endTimePicker" data-time="@endTime">
-            
+
         </div>
         <input id="endTime" asp-for="End" class="hidden" type="text" value="@endTime" />
         <span asp-validation-for="End" class="text-danger"></span>
+    </div>
+</div>
+
+@Html.HiddenFor(model => model.Work)
+
+@foreach (var work in @Model.Work)
+{
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="btn btn-default">
+                <p class="glyphicon glyphicon-wrench"><strong>@work.Name</strong></p>
+            </div>
+        </div>
+    </div>
+}
+
+@functions
+{
+
+    void AddToWorkCollection(ServiceWork work)
+    {
+        @Model.Work.Add(work);
+    }
+
+}
+
+<h3>Adicionar serviços</h3>
+<div class="row">
+    <div class="col-lg-1">
+        @{ var arruada = new Arruada(); }
+        <div class="btn btn-info" onclick="@{ AddToWorkCollection(arruada); }">
+            <p class="glyphicon glyphicon-wrench">
+
+                @arruada.Name
+            </p>
+        </div>
     </div>
 </div>
 
