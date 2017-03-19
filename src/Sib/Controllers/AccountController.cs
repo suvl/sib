@@ -215,6 +215,14 @@ namespace Sib.Controllers
             }
             else
             {
+                // if the user already has an account, link it with it
+                var user = await _userManager.FindByEmailAsync(info.Principal.FindFirstValue(ClaimTypes.Email));
+                if (user != null)
+                {
+                    user.AddFbContextToUser(this.HttpContext);
+                    return RedirectToLocal(returnUrl);
+                }
+
                 // If the user does not have an account, then ask the user to create an account.
                 ViewData["ReturnUrl"] = returnUrl;
                 ViewData["LoginProvider"] = info.LoginProvider;

@@ -7,6 +7,8 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System.Linq;
+
 namespace Sib.Core.Authentication
 {
     using System;

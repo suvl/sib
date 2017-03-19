@@ -9,17 +9,17 @@
     using Sib.Core.Domain;
     using Sib.Core.Settings;
 
-    public class SibUserRepository : BaseTypedRepository<SibUser>
+    public class MusicianRepository : BaseTypedRepository<Musician>
     {
-        public SibUserRepository(MongoDbSettings settings)
+        public MusicianRepository(MongoDbSettings settings)
             : base(settings)
         {
         }
 
-        public Task<IAsyncCursor<SibUser>> GetUsersBySection(Section section)
+        public Task<IAsyncCursor<Musician>> GetMusiciansBySection(Section section)
         {
             var filter = this.FilterBuilder.Eq(_ => _.Section, section);
-            return this.Collection.FindAsync<SibUser>(filter);
+            return this.Collection.FindAsync<Musician>(filter);
         }
     }
 }
