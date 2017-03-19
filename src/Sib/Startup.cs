@@ -38,11 +38,9 @@ namespace Sib
     using MongoDB.Driver;
 
     using Services;
+    using Repository;
 
-    using Sib.Core.Domain;
-    using Sib.Repository;
-
-    using IServiceRepository = Sib.Core.Interfaces.IServiceRepository;
+    using IServiceRepository = Core.Interfaces.IServiceRepository;
 
     /// <summary>
     /// The startup.

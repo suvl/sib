@@ -21,6 +21,6 @@
 
         public TimeSpan End { get; set; }
 
-        public IList<ServiceWork> Work { get; set; } = new List<ServiceWork>();
+        public IList<string> Work { get; set; } = new List<string>();
     }
 }

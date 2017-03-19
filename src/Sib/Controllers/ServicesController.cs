@@ -84,8 +84,7 @@ namespace Sib.Controllers
         public async Task<IActionResult> Edit(string serviceId)
         {
             var service = await this.serviceRepository.FindById(serviceId).ConfigureAwait(false);
-            // debug
-            service.Work.Add(new Arruada());
+
 
             var serviceModel = new ServiceModel
             {
@@ -99,18 +98,9 @@ namespace Sib.Controllers
             return this.View("Edit", serviceModel);
         }
 
-        [HttpPut, Authorize(Policy = "Administrator")]
-        public async Task<IActionResult> PutWork(ServiceModel model, ServiceWork work)
-        {
-            model.Work.Add(work);
-
-            throw new NotImplementedException();
-        }
-
         [HttpPost, Route("update"), ValidateAntiForgeryToken, Authorize(Roles = Roles.Administrator)]
         public async Task<IActionResult> Update(ServiceModel serviceModel)
         {
-            var serviceId = serviceModel.Id;
             if (!ModelState.IsValid)
                 return this.View(nameof(this.Edit), serviceModel);
 
@@ -123,7 +113,7 @@ namespace Sib.Controllers
             service.End = TimeSpan.Parse(serviceModel.End);
             service.Start = TimeSpan.Parse(serviceModel.Start);
             service.Location = serviceModel.Location;
-            service.Work = serviceModel.Work;
+            service.Work = serviceModel.Work.Where(_ => !string.IsNullOrEmpty(_)).ToList();
 
             await this.serviceRepository.Update(service).ConfigureAwait(false);
 

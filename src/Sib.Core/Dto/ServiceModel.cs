@@ -27,21 +27,14 @@
         public string End { get; set; }
 
         [DataMember]
-        public IList<ServiceWork> Work { get; set; } = new List<ServiceWork>();
-
-        [DataMember]
-        public IReadOnlyList<ServiceWork> NewWorks { get; } = new List<ServiceWork>
-                                                                  {
-                                                                      new Arruada(),
-                                                                      new Peditorio(),
-                                                                      new Missa(),
-                                                                      new Procissao(),
-                                                                      new Concerto(),
-                                                                      new Entrega(),
-                                                                      new Outro()
-                                                                  };
+        public IList<string> Work { get; set; }
 
         [DataMember]
         public string Id { get; set; }
+
+        public ServiceModel()
+        {
+            this.Work = new List<string>();
+        }
     }
 }

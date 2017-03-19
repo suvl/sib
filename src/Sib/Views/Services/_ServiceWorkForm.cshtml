@@ -1,0 +1,30 @@
+﻿@using HtmlHelpers.BeginCollectionItemCore
+@using Sib.Core.Domain
+@model ServiceWork
+
+@*@using (Html.BeginCollectionItem("Work"))
+{
+
+    <div class="row workItem">
+        <div class="col-lg-3">
+            <div class="btn btn-default">
+                <p class="glyphicon glyphicon-wrench">
+                    @Html.HiddenFor(work => work.GetType().FullName)
+                    <strong>@Model.Name</strong>
+                    <a href="#" class="glyphicon glyphicon-remove deleteWork" data-action="removeItem"></a>
+                </p>
+            </div>
+        </div>
+    </div>
+}*@
+
+@section Scripts
+{
+    <script>
+        $(".deleteWork").on('click', function () {
+            console.log("clicked");
+            $(this).parents("div.workItem:first").remove();
+            return false;
+        });
+    </script>
+}
