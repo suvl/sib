@@ -1,0 +1,42 @@
+﻿@model IEnumerable<Sib.Core.Dto.ServiceModel>
+
+
+<h1>Serviços</h1>
+<p>Serviços que a banda contratou para a temporada atual.</p>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>Local</th>
+            <th>Data</th>
+            <th>Chegada</th>
+            <th>Fim*</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var service in Model)
+        {
+            <tr class="mouse-hand" onclick="redirectTo('services/edit/@service.Id')">
+                <td>
+                    @service.Location
+                </td>
+                <td>@service.Date.ToString("d")</td>
+                <td>@service.Start</td>
+                <td>@service.End</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    
+    <a href="@Url.Action("Create")" class="btn btn-default right">Criar novo</a>
+    <p class="text-info text-right">Hora sempre aproximada.</p>
+</div>
+
+@section Scripts {
+    <script>
+        function redirectTo(url) {
+            window.location.replace(url);
+        }
+    </script>
+}

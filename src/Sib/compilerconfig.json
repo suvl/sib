@@ -1,0 +1,14 @@
+﻿[
+  {
+    "outputFile": "wwwroot/lib/bootstrap-timepicker/css/timepicker.css",
+    "inputFile": "wwwroot/lib/bootstrap-timepicker/css/timepicker.less"
+  },
+  {
+    "outputFile": "wwwroot/lib/jquery-ui/jquery-ui.es5.js",
+    "inputFile": "wwwroot/lib/jquery-ui/jquery-ui.js"
+  },
+  {
+    "outputFile": "wwwroot/lib/bootstrap-formhelpers/less/bootstrap-formhelpers.css",
+    "inputFile": "wwwroot/lib/bootstrap-formhelpers/less/bootstrap-formhelpers.less"
+  }
+]
